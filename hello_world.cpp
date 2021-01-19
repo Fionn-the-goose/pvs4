@@ -40,7 +40,7 @@ int main (void)
 
 	/* 1) */
 
-	// 
+	// Abfragen der Anzahl verfügbarer Plattformen und ihrer ID
 	err = clGetPlatformIDs(0, NULL, &num_of_platforms);
 	if (err != CL_SUCCESS)
 	{
@@ -79,7 +79,7 @@ int main (void)
 			}
 		}
 
-		// 
+		// Abfragen der Anzahl verfügbarer Geräte und ihrer ID
 		err = clGetDeviceIDs(platforms[nvidia_platform], CL_DEVICE_TYPE_GPU, 1, &device_id, &num_of_devices);
 		if (err != CL_SUCCESS)
 		{
@@ -88,7 +88,7 @@ int main (void)
 		}
 	}
 
-	// 
+	// ... Kontext oeffnen
 	context = clCreateContext(0, 1, &device_id, NULL, NULL, &err);
 	if (err != CL_SUCCESS)
 	{
@@ -96,7 +96,7 @@ int main (void)
 		return 0;
 	}
 
-	// 
+	// Erzeugen einer Befehlswarteschlange (FIFO) 
 	command_queue = clCreateCommandQueue(context, device_id, 0, &err);
 	if (err != CL_SUCCESS)
 	{
@@ -104,7 +104,7 @@ int main (void)
 		return 0;
 	}
 
-	// 
+	// ... Erzeuge online ein Programm vom Quellcode des Kerns 
 	program = clCreateProgramWithSource(context, 1, (const char **)&KernelSource, NULL, &err);
 	if (err != CL_SUCCESS)
 	{
@@ -112,7 +112,7 @@ int main (void)
 		return 0;
 	}
 
-  //
+  //Kompiliere und Linke den Kernel-Quelltext
 	err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
@@ -120,7 +120,7 @@ int main (void)
 		return 0;
 	}
 
-	//
+	//Definiere den Kernel Einsprungspunkt
 	kernel = clCreateKernel(program, "test", &err);
 	if (err != CL_SUCCESS)
 	{
@@ -131,30 +131,30 @@ int main (void)
 
 	/* 2) */
 
-	// 
+	// ... Erzeuge Puffer für Ein-und Ausgabe 
 	input  = clCreateBuffer (context, CL_MEM_READ_ONLY,	 MEM_SIZE, NULL, &err);
 	output = clCreateBuffer (context, CL_MEM_WRITE_ONLY, MEM_SIZE, NULL, &err);
 
-	// 
+	// Kopiere zusammenhängende Daten aus 'data' in den Eingabe-Puffer 'input' 
 	clEnqueueWriteBuffer(command_queue, input, CL_TRUE, 0, MEM_SIZE, data, 0, NULL, NULL);
 
-	// 
+	//  Definiere die Reihenfolge der Argumente des Kerns: hello(input, output)
 	clSetKernelArg(kernel, 0, sizeof(cl_mem), &input);
 	clSetKernelArg(kernel, 1, sizeof(cl_mem), &output);
 
 
 	/* 3)  */
 
-	// 
+	// ... Einreihen des Kerns in die Befehlswarteschlange und Aufteilungsbereich angeben 
 	clEnqueueNDRangeKernel (command_queue, kernel, 1, NULL, global, NULL, 0, NULL, NULL);
 
-	// 
+	// Auf die Beendigung der Operation warten 
 	clFinish(command_queue);
 
-	// 
+	// Kopiere die Ergebnisse vom Ausgabe-Puffer 'output' in das Ergebnisfeld 'results' 
 	clEnqueueReadBuffer(command_queue, output, CL_TRUE, 0, MEM_SIZE, results, 0, NULL, NULL);
 
-  //
+  //... Aufraeumender    OpenCLRessourcen
   for (unsigned int i=0; i < DATA_SIZE; i++)
     printf("%f\n", results[i]);
 
