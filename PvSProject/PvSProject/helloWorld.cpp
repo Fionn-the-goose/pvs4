@@ -212,20 +212,6 @@ int main(void)
 
 	// Compile and link the kernel source text
 	err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-	if (err == CL_BUILD_PROGRAM_FAILURE) { //copied from https://stackoverflow.com/questions/9464190/error-code-11-what-are-all-possible-reasons-of-getting-error-cl-build-prog for debugging purposes, no effect on the functional code
-		// Determine the size of the log
-		size_t log_size;
-		clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
-
-		// Allocate memory for the log
-		char* log = (char*)malloc(log_size);
-
-		// Get the log
-		clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
-
-		// Print the log
-		printf("%s\n", log);
-	}
 	if (err != CL_SUCCESS)
 	{
 		printf("Error building program. Error: %d\n", err);
